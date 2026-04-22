@@ -1,43 +1,38 @@
 name: Update Nightly rustc
-
 on:
   schedule:
-    - cron: "5 0 * * 6"
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  pull-requests: write
-
+    - cron: "5 0 * * 6" # Saturday at 00:05
+  workflow_dispatch: # allows manual triggering
 jobs:
   format:
     name: Update nightly rustc
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install cargo-rbmt
         run: cargo install --git https://github.com/rust-bitcoin/rust-bitcoin-maintainer-tools.git --rev "$(cat rbmt-version)" cargo-rbmt
-
       - name: Update nightly toolchain pins
         run: |
           set -x
-          cargo rbmt toolchains --update-nightly
+          eval "$(cargo rbmt toolchains --update-nightly)"
           echo "nightly_version=${RBMT_NIGHTLY}" >> $GITHUB_ENV
+          # Some days there is no new nightly. In this case don't make an empty PR.
           if ! git diff --exit-code > /dev/null; then
+              echo "Updated nightly. Opening PR."
               echo "changes_made=true" >> $GITHUB_ENV
           else
+              echo "Attempted to update nightly but the latest-nightly date did not change. Not opening any PR."
               echo "changes_made=false" >> $GITHUB_ENV
           fi
-
       - name: Create Pull Request
         if: env.changes_made == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.APOELSTRA_RUST_BITCOIN_ORG_CREATE_PR }}
           author: Update Nightly Rustc Bot <bot@example.com>
           committer: Update Nightly Rustc Bot <bot@example.com>
           title: Automated update to Cargo.toml nightly toolchain (to ${{ env.nightly_version }})
           body: |
-            Automated update to Cargo.toml rbmt toolchain metadata.
+           Automated update to Cargo.toml rbmt toolchain metadata by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action
           commit-message: Automated update to Cargo.toml nightly toolchain to ${{ env.nightly_version }}
           branch: create-pull-request/weekly-nightly-update
