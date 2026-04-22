@@ -25,7 +25,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
-          token: ${{ secrets.APOELSTRA_RUST_BITCOIN_ORG_CREATE_PR }}
+          # token: ${{ secrets.APOELSTRA_RUST_BITCOIN_ORG_CREATE_PR }}
           author: Update Nightly Rustc Bot <bot@example.com>
           committer: Update Nightly Rustc Bot <bot@example.com>
           title: Automated daily update to rustc (to ${{ env.nightly_version }})
