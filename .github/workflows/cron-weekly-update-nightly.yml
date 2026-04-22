@@ -22,7 +22,7 @@ jobs:
       - name: Update nightly toolchain pins
         run: |
           set -x
-          eval "$(cargo rbmt toolchains --update-nightly)"
+          cargo rbmt toolchains --update-nightly
           echo "nightly_version=${RBMT_NIGHTLY}" >> $GITHUB_ENV
           if ! git diff --exit-code > /dev/null; then
               echo "changes_made=true" >> $GITHUB_ENV
